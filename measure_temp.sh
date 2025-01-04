@@ -5,59 +5,19 @@
 # Title		:	Thermometer AVT5330 C
 # Purpose	: 	To measure temperature thorugh linux
 # Params	:
-#				0 - normal run
-#				1 - debug
-#				2
+#				0 - normal mode (temp measure every 5 minutes)
+#				1 - debug mode (temp measure every 4 seconds, more output)
+#				2 - development mode (temp measure every 4 seconds)
 #
-# Version	:	1.1
+# Version	:	1.4
 # Date		:	2023.02.09
 # Author	:	MB
 #
 # History	:	2023.02.09 1.0 draft
-#				2023.12.15 1.1 draft
+#				2023.12.15 1.1 prototype
 #				2024.12.30 1.2 production
-#
-# Readme	:
-#		on AVT5330 board set one of jumpers for automatic measure
-#		install:
-#		as root
-#			apt install gnuplot
-#			apt install gnuplot-x11
-#			connect USB thermometer
-#			chmod 744 /dev/ttyUSB0
-#			chmod 744 ./measure_temp.sh
-#		as user
-#			terminal1 (run the script)
-#				while true; do ./measure_temp.sh; date; sleep 60; done
-#			terminal2 (for drawing)
-#				gnuplot
-#				copy/paste below to gnuplot
-# 					while (1) {
-# 					reset
-# 					#set title "Temp"
-# 					set key title "Sensors"
-# 					set xlabel "Time"
-# 					set ylabel "Temperature [Celsius]"
-# 					set xdata time
-# 					set ytics 1
-# 					set mytics 2
-# 					set mxtics 4
-# 					set autoscale x
-# 					set yrange[14:42]
-# 					set format x "%m-%d\n%H:%M:%S"
-# 					set timefmt "%Y-%m-%d %H:%M:%S"
-# 					set style data lines
-# 					set style line 100 lt 1 lc rgb "grey" lw 1
-# 					set style line 101 lt 1 lc rgb "grey" lw 1
-# 					set grid ytics ls 100 xtics ls 101 mxtics ls 101
-# 					set key top
-# 					#set samples 1000
-# 					plot '/tmp/temp2.txt' using 1:9 title 'sensor #7', '/tmp/temp2.txt' using 1:10 title 'sensor #8'
-# 					pause 60
-# 					}
-#
-#				gnuplot tip: change plot line for more sensors
-# 					plot '/tmp/temp2.txt' using 1:3 title 'T1', '/tmp/temp2.txt' using 1:4 title 'T2', '/tmp/temp2.txt' using 1:5 title 'T3', '/tmp/temp2.txt' using 1:6 title 'T4', '/tmp/temp2.txt' using 1:7 title 'T5', '/tmp/temp2.txt' using 1:8 title 'T6', '/tmp/temp2.txt' using 1:9 title 'T7', '/tmp/temp2.txt'
+#				2025.01.04 1.3 rewriting with a fresh turbo skills in bash
+#				2025.01.04 1.4 author learned about arrays in bash
 #
 #		known issues:
 #			"skipping write getting error" - some bug to ignore
@@ -68,189 +28,124 @@
 
 # set variables
 OPTION=${1:-0}
-TXTFILE=/tmp/temp.txt
-TXTFILE2=/tmp/temp2.txt
+OUTPUTFILE=/tmp/temp_main_output.txt
 
 # set /dev/USB0
 function set_stty_dev {
 stty -F /dev/ttyUSB0 19200 cs8 -cstopb -parenb -cooked
 }
 
-# set temporary files
-function set_new_temp_files {
-touch $TXTFILE;
-#chmod 777 $TXTFILE;
-touch $TXTFILE2;
-#chmod 777 $TXTFILE2;
+# create temporary files
+function create_files {
+touch $OUTPUTFILE;
 }
 
-# remove old temporary files
-function set_old_temp_files {
-rm $TXTFILE;
+# remove old files if exist
+function clear_old_files {
+if [[ -f $OUTPUTFILE ]]; then
+	rm $OUTPUTFILE;
+fi
 }
 
-# get current temp
-function get_current_temp {
+# check input parameter
+function parse_input_params {
 	if [ $OPTION = 0 ]; then
-		timeout 2 cat /dev/ttyUSB0 > $TXTFILE
+		printf 'NORMAL MODE\n';
+		export SLEEP_TIME="5m";
 	elif [ $OPTION = 1 ]; then
-		timeout 2 cat /dev/ttyUSB0 > $TXTFILE
-		#debug echo
-		date
-		cat $TXTFILE
-		echo `printf ''`
-		echo `printf ''`
-		echo `printf '^^^get_current_temp'`
-		echo `printf ''`
+		printf 'DEBUG MODE\n';
+		export SLEEP_TIME="4s";
+	elif [ $OPTION = 2 ]; then
+		printf 'DEV MODE\n';
+		export SLEEP_TIME="4s";
 	else
-		echo "Wrong input parameter. Exiting."
+		printf 'Wrong input parameter (func: parse_input_params). Exiting.\n';
+		exit 1;
 	fi
 }
 
 # get current temp
-function get_split_temp {
-	if [ $OPTION = 0 ]; then	
-		current_temp1=`cut -c 4-9 $TXTFILE`
-		current_temp1=`echo $current_temp1 | sed 's/ *$//g'`
-		current_temp2=`cut -c 17-22 $TXTFILE`
-		current_temp2=`echo $current_temp2 | sed 's/ *$//g'`
-		current_temp3=`cut -c 30-35 $TXTFILE`
-		current_temp3=`echo $current_temp3 | sed 's/ *$//g'`
-		current_temp4=`cut -c 43-48 $TXTFILE`
-		current_temp4=`echo $current_temp4 | sed 's/ *$//g'`
-		current_temp5=`cut -c 56-61 $TXTFILE`
-		current_temp5=`echo $current_temp5 | sed 's/ *$//g'`
-		current_temp6=`cut -c 69-74 $TXTFILE`
-		current_temp6=`echo $current_temp6 | sed 's/ *$//g'`
-		current_temp7=`cut -c 82-87 $TXTFILE`
-		current_temp7=`echo $current_temp7 | sed 's/ *$//g'`
-		current_temp8=`cut -c 95-100 $TXTFILE`
-		current_temp8=`echo $current_temp8 | sed 's/ *$//g'`
-	elif [ $OPTION = 1 ]; then
-		current_temp1=`cut -c 4-9 $TXTFILE`
-		current_temp1=`echo $current_temp1 | sed 's/ *$//g'`
-		current_temp2=`cut -c 17-22 $TXTFILE`
-		current_temp2=`echo $current_temp2 | sed 's/ *$//g'`
-		current_temp3=`cut -c 30-35 $TXTFILE`
-		current_temp3=`echo $current_temp3 | sed 's/ *$//g'`
-		current_temp4=`cut -c 43-48 $TXTFILE`
-		current_temp4=`echo $current_temp4 | sed 's/ *$//g'`
-		current_temp5=`cut -c 56-61 $TXTFILE`
-		current_temp5=`echo $current_temp5 | sed 's/ *$//g'`
-		current_temp6=`cut -c 69-74 $TXTFILE`
-		current_temp6=`echo $current_temp6 | sed 's/ *$//g'`
-		current_temp7=`cut -c 82-87 $TXTFILE`
-		current_temp7=`echo $current_temp7 | sed 's/ *$//g'`
-		current_temp8=`cut -c 95-100 $TXTFILE`
-		current_temp8=`echo $current_temp8 | sed 's/ *$//g'`
-		
-		#debug echo
-		echo 'current_temp1=>'$current_temp1;
-		echo 'current_temp2=>'$current_temp2;
-		echo 'current_temp3=>'$current_temp3;
-		echo 'current_temp4=>'$current_temp4;
-		echo 'current_temp5=>'$current_temp5;
-		echo 'current_temp6=>'$current_temp6;
-		echo 'current_temp7=>'$current_temp7;
-		echo 'current_temp8=>'$current_temp8;
-		echo `printf ''`
-		echo `printf '^^^get_split_temp'`
-		echo `printf ''`
-	else
-		echo "Wrong input parameter. Exiting."
-	fi
+function get_current_temp() {
+current_temp_array=(`timeout 2 cat /dev/ttyUSB0`)
+if [ $OPTION = 1 ]; then
+	printf '%s ' "${current_temp_array[@]}"
+	##printf -v joined '%s ' "${current_temp_array[@]}"
+	##echo "${joined%,}"
+	printf '\n'
+	printf '^^^get_current_temp\n'
+fi
+}
+
+# temperature from each sensor to one variable
+function split_temp {
+current_temp1=`echo ${current_temp_array[2]}|tr -d "'C"`
+current_temp2=`echo ${current_temp_array[4]}|tr -d "'C"`
+current_temp3=`echo ${current_temp_array[6]}|tr -d "'C"`
+current_temp4=`echo ${current_temp_array[8]}|tr -d "'C"`
+current_temp5=`echo ${current_temp_array[10]}|tr -d "'C"`
+current_temp6=`echo ${current_temp_array[12]}|tr -d "'C"`
+current_temp7=`echo ${current_temp_array[14]}|tr -d "'C"`
+current_temp8=`echo ${current_temp_array[16]}|tr -d "'C"`
+if [ $OPTION = 1 ]; then
+	printf 'current_temp1=>'$current_temp1'\n';
+	printf 'current_temp2=>'$current_temp2'\n';
+	printf 'current_temp3=>'$current_temp3'\n';
+	printf 'current_temp4=>'$current_temp4'\n';
+	printf 'current_temp5=>'$current_temp5'\n';
+	printf 'current_temp6=>'$current_temp6'\n';
+	printf 'current_temp7=>'$current_temp7'\n';
+	printf 'current_temp8=>'$current_temp8'\n';
+	printf '^^^split_temp\n'
+fi
 }
 
 #set 0 when no temp
-function set_norm_temp {
-	if [ $OPTION = 0 ]; then
-		re='^[+-]?[0-9]+([.][0-9]+)?$'
-		if [[ "$current_temp1" =~ $re ]]; then current_temp1=$current_temp1
-		elif [ "$current_temp1" = "___._" ]; then current_temp1="0.0"
-		else current_temp1="err"
-		fi
-		if [[ "$current_temp2" =~ $re ]]; then current_temp2=$current_temp2
-		elif [ "$current_temp2" = "___._" ]; then current_temp2="0.0"
-		else current_temp2="err"
-		fi
-		if [[ "$current_temp3" =~ $re ]]; then current_temp3=$current_temp3
-		elif [ "$current_temp3" = "___._" ]; then current_temp3="0.0"
-		else current_temp3="err"
-		fi
-		if [[ "$current_temp4" =~ $re ]]; then current_temp4=$current_temp4
-		elif [ "$current_temp4" = "___._" ]; then current_temp4="0.0"
-		else current_temp4="err"
-		fi
-		if [[ "$current_temp5" =~ $re ]]; then current_temp5=$current_temp5
-		elif [ "$current_temp5" = "___._" ]; then current_temp5="0.0"
-		else current_temp5="err"
-		fi
-		if [[ "$current_temp6" =~ $re ]]; then current_temp6=$current_temp6
-		elif [ "$current_temp6" = "___._" ]; then current_temp6="0.0"
-		else current_temp6="err"
-		fi
-		if [[ "$current_temp7" =~ $re ]]; then current_temp7=$current_temp7
-		elif [ "$current_temp7" = "___._" ]; then current_temp7="0.0"
-		else current_temp7="err"
-		fi
-		if [[ "$current_temp8" =~ $re ]]; then current_temp8=$current_temp8
-		elif [ "$current_temp8" = "___._" ]; then current_temp8="0.0" 
-		else current_temp8="err"
-		fi
-	elif [ $OPTION = 1 ]; then
-		re='^[+-]?[0-9]+([.][0-9]+)?$'
-		if [[ "$current_temp1" =~ $re ]]; then current_temp1=$current_temp1
-		elif [ "$current_temp1" = "___._" ]; then current_temp1="0.0"
-		else current_temp1="err"
-		fi
-		if [[ "$current_temp2" =~ $re ]]; then current_temp2=$current_temp2
-		elif [ "$current_temp2" = "___._" ]; then current_temp2="0.0"
-		else current_temp2="err"
-		fi
-		if [[ "$current_temp3" =~ $re ]]; then current_temp3=$current_temp3
-		elif [ "$current_temp3" = "___._" ]; then current_temp3="0.0"
-		else current_temp3="err"
-		fi
-		if [[ "$current_temp4" =~ $re ]]; then current_temp4=$current_temp4
-		elif [ "$current_temp4" = "___._" ]; then current_temp4="0.0"
-		else current_temp4="err"
-		fi
-		if [[ "$current_temp5" =~ $re ]]; then current_temp5=$current_temp5
-		elif [ "$current_temp5" = "___._" ]; then current_temp5="0.0"
-		else current_temp5="err"
-		fi
-		if [[ "$current_temp6" =~ $re ]]; then current_temp6=$current_temp6
-		elif [ "$current_temp6" = "___._" ]; then current_temp6="0.0"
-		else current_temp6="err"
-		fi
-		if [[ "$current_temp7" =~ $re ]]; then current_temp7=$current_temp7
-		elif [ "$current_temp7" = "___._" ]; then current_temp7="0.0"
-		else current_temp7="err"
-		fi
-		if [[ "$current_temp8" =~ $re ]]; then current_temp8=$current_temp8
-		elif [ "$current_temp8" = "___._" ]; then current_temp8="0.0" 
-		else current_temp8="err"
-		fi
-		#debug echo
-		echo 'current_temp1=>'$current_temp1;
-		echo 'current_temp2=>'$current_temp2;
-		echo 'current_temp3=>'$current_temp3;
-		echo 'current_temp4=>'$current_temp4;
-		echo 'current_temp5=>'$current_temp5;
-		echo 'current_temp6=>'$current_temp6;
-		echo 'current_temp7=>'$current_temp7;
-		echo 'current_temp8=>'$current_temp8;
-		echo `printf ''`
-		echo `printf '^^^set_norm_temp'`
-		echo `printf ''`
-	else
-		echo "Wrong input parameter. Exiting."
-	fi
-}
+function norm_temp {
+re='^[+-]?[0-9]+([.][0-9]+)?$'
+if [[ "$current_temp1" =~ $re ]]; then current_temp1=$current_temp1
+elif [ "$current_temp1" = "___._" ]; then current_temp1="0.0"
+else current_temp1="err"
+fi
+if [[ "$current_temp2" =~ $re ]]; then current_temp2=$current_temp2
+elif [ "$current_temp2" = "___._" ]; then current_temp2="0.0"
+else current_temp2="err"
+fi
+if [[ "$current_temp3" =~ $re ]]; then current_temp3=$current_temp3
+elif [ "$current_temp3" = "___._" ]; then current_temp3="0.0"
+else current_temp3="err"
+fi
+if [[ "$current_temp4" =~ $re ]]; then current_temp4=$current_temp4
+elif [ "$current_temp4" = "___._" ]; then current_temp4="0.0"
+else current_temp4="err"
+fi
+if [[ "$current_temp5" =~ $re ]]; then current_temp5=$current_temp5
+elif [ "$current_temp5" = "___._" ]; then current_temp5="0.0"
+else current_temp5="err"
+fi
+if [[ "$current_temp6" =~ $re ]]; then current_temp6=$current_temp6
+elif [ "$current_temp6" = "___._" ]; then current_temp6="0.0"
+else current_temp6="err"
+fi
+if [[ "$current_temp7" =~ $re ]]; then current_temp7=$current_temp7
+elif [ "$current_temp7" = "___._" ]; then current_temp7="0.0"
+else current_temp7="err"
+fi
+if [[ "$current_temp8" =~ $re ]]; then current_temp8=$current_temp8
+elif [ "$current_temp8" = "___._" ]; then current_temp8="0.0"
+else current_temp8="err"
+fi
 
-# set output file
-function set_output_file {
-echo `printf '%(%Y-%m-%d %H:%M:%S)T\n'` $current_temp1 $current_temp2 $current_temp3 $current_temp4 $current_temp5 $current_temp6 $current_temp7 $current_temp8 >> $TXTFILE2
+if [ $OPTION = 1 ]; then
+	printf 'current_temp1=>'$current_temp1'\n';
+	printf 'current_temp2=>'$current_temp2'\n';
+	printf 'current_temp3=>'$current_temp3'\n';
+	printf 'current_temp4=>'$current_temp4'\n';
+	printf 'current_temp5=>'$current_temp5'\n';
+	printf 'current_temp6=>'$current_temp6'\n';
+	printf 'current_temp7=>'$current_temp7'\n';
+	printf 'current_temp8=>'$current_temp8'\n';
+	printf '^^^norm_temp\n'
+fi
 }
 
 # run gnuplot
@@ -277,27 +172,45 @@ plot '/tmp/temp2.txt' using 1:3 title 'T1', '/tmp/temp2.txt' using 1:4 title 'T2
 EOF
 }
 
-# create output file
-function set_file {
-	set_norm_temp
-	if [ "$current_temp1" = "err" ] || [ "$current_temp2" = "err" ] || [ "$current_temp3" = "err" ] || [ "$current_temp4" = "err" ] || [ "$current_temp5" = "err" ] || [ "$current_temp6" = "err" ] || [ "$current_temp7" = "err" ] || [ "$current_temp8" = "err" ]; then
-		date
-		echo `printf 'skipping write getting error'`
-	else
-		set_output_file
-		date
+# set output file
+function set_output_file {
+printf '%(%Y-%m-%d %H:%M:%S)T' >> $OUTPUTFILE
+printf ' ' >> $OUTPUTFILE
+printf "%s" $current_temp1' '$current_temp2' '$current_temp3' '$current_temp4' '$current_temp5' '$current_temp6' '$current_temp7' '$current_temp8 >> $OUTPUTFILE
+printf '\n' >> $OUTPUTFILE
+}
+
+# write output to file
+function write_output {
+	if [ "$current_temp1" = "err" ] || \
+		[ "$current_temp2" = "err" ] || \
+		[ "$current_temp3" = "err" ] || \
+		[ "$current_temp4" = "err" ] || \
+		[ "$current_temp5" = "err" ] || \
+		[ "$current_temp6" = "err" ] || \
+		[ "$current_temp7" = "err" ] || \
+		[ "$current_temp8" = "err" ]; then
+		printf 'Getting read error... skipping...\n';
+		return ;
 	fi
+	set_output_file
 }
 
 # main function
 function main {
+	parse_input_params
+	clear_old_files
 	set_stty_dev
-	set_new_temp_files
-	get_current_temp
-	get_split_temp
-	set_file	
-	set_old_temp_files
-#	set_gnuplot # this function not in use require more development to run
+	create_files
+	while true; do
+		date;
+		get_current_temp;
+		split_temp;
+		norm_temp;
+		write_output;
+#		set_gnuplot #not in use
+		sleep $SLEEP_TIME;
+	done
 }
 
 main
