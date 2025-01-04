@@ -5,13 +5,14 @@
 # 
 # How to install:
 #   on AVT5330 set one of jumpers for automatic measure
-#		as root
-#			apt install gnuplot
-#			apt install gnuplot-x11
+#		on pc install:
+#   as user with sudo
+#			sudo apt install gnuplot
+#			sudo apt install gnuplot-x11
 #			connect USB thermometer
-#			chmod 744 /dev/ttyUSB0
-#			chmod 744 ./measure_temp.sh
+#			sudo chmod 664 /dev/ttyUSB0
 #		as user
+#     chmod 700 ./measure_temp.sh
 #			terminal1 (run the script)
 #				while true; do ./measure_temp.sh; date; sleep 60; done
 #			terminal2 (for drawing)
