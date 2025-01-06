@@ -5,9 +5,9 @@ Script measure_temp.sh writes data from sensors to $OUTPUTFILE file, using gnupl
 How to install:
 1. on AVT5330 board set one of jumpers to trigger automatic measure, add at least one sensor and connect AVT5330 to USB of a pc/laptop
 2. on pc/laptop:
+    sudo chmod 664 /dev/ttyUSB0
     sudo apt install gnuplot
     sudo apt install gnuplot-x11
-    sudo chmod 664 /dev/ttyUSB0
     chmod 700 ./measure_temp.sh
     terminal1 (run the script)
         ./measure_temp.sh
