@@ -1,4 +1,3 @@
-AVT5330-thermometer-for-linux
 This project is a script for "AVT5330", tested on Debians: antiX, Ubuntu.
 "AVT5330" is a piece of hardware bought for temperature measurements in a bakery.
 Script measure_temp.sh writes data from sensors to $OUTPUTFILE file, using gnuplot to see a trend.
