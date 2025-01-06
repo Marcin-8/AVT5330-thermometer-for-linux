@@ -3,7 +3,7 @@ This project is a script for "AVT5330", tested on Debians: antiX, Ubuntu.
 Script measure_temp.sh writes data from sensors to $OUTPUTFILE file, using gnuplot to see a trend.
 
 How to install:
-1. on AVT5330 board set one of jumpers to trigger automatic measure (add at least one sensor), connect AVT5330 to USB of pc/laptop
+1. on AVT5330 board set one of jumpers to trigger automatic measure, add at least one sensor and connect AVT5330 to USB of a pc/laptop
 2. on pc/laptop:
     sudo apt install gnuplot
     sudo apt install gnuplot-x11
