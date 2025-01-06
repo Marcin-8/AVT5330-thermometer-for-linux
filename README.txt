@@ -1,8 +1,8 @@
 AVT5330-thermometer-for-linux
-"AVT5330" is a piece of hardware bought for temperature measurements in a bakery
-This project is a piece of software for "AVT5330" made for linux (tested on Debians: antiX, Ubuntu)
-measure_temp.sh writes data from sensors to /tmp/temp2.txt file, using gnuplot to see the trend
- 
+This project is a script for "AVT5330", tested on Debians: antiX, Ubuntu.
+"AVT5330" is a piece of hardware bought for temperature measurements in a bakery.
+Script measure_temp.sh writes data from sensors to $OUTPUTFILE file, using gnuplot to see a trend.
+
 How to install:
 1. on AVT5330 board set one of jumpers for automatic measure (add at least one sensor), connect AVT5330 to USB of pc/laptop
 2. on pc/laptop:
@@ -42,5 +42,5 @@ How to install:
 gnuplot tip: change plot line for more sensors, e.g.
     plot '/tmp/temp2.txt' using 1:3 title 'T1', '/tmp/temp2.txt' using 1:4 title 'T2', [...]'/tmp/temp2.txt' using 1:9 title 'T7', '/tmp/temp2.txt'
 -----------------
-special thanks to karkad
+special thanks to karkad for a help to kick this off
 https://eko.one.pl/forum/viewtopic.php?id=4203&p=2
