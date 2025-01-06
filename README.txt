@@ -1,5 +1,5 @@
 AVT5330-thermometer-for-linux
-"AVT5330" is a piece of hardware bought for temperature measurement
+"AVT5330" is a piece of hardware bought for temperature measurements in a bakery
 This project is a piece of software for "AVT5330" made for linux (tested on Debians: antiX, Ubuntu)
 measure_temp.sh writes data from sensors to /tmp/temp2.txt file, using gnuplot to see the trend
  
