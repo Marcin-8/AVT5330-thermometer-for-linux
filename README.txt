@@ -11,7 +11,7 @@ How to install:
     terminal1 (run the script)
         ./measure_temp.sh
     
-    Example output:
+    Example output when 3 sensors connected:
         $ tail -10 /tmp/temp_main_output.txt 
         2025-01-09 18:08:47 0.0 0.0 0.0 0.0 0.0 5.4 9.4 11.6
         2025-01-09 18:13:49 0.0 0.0 0.0 0.0 0.0 3.6 8.7 11.3
