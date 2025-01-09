@@ -32,7 +32,6 @@ How to install:
     copy/paste below to gnuplot editor and hit enter (assuming temperatures 0-30C in line -> "set yrange[0:30]")
         while (1) {
         reset
-        #set title "Temp z ostatnich 24 godzin"
         set key title "Sensors" 
         set xlabel "Time"
         set ylabel "Temperature [Celsius]"
