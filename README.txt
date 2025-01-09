@@ -29,18 +29,21 @@ How to install:
     sudo apt install gnuplot-x11
     terminal2 (run gnuplot for drawing)
         gnuplot
-    copy/paste below to gnuplot editor and hit enter (assuming temperatures 0-30C in line -> "set yrange[0:30]")
+    copy/paste below to gnuplot editor and hit enter (assuming y range 0-30)
         while (1) {
         reset
-        set key title "Sensors" 
+        set key title "Sensors"
         set xlabel "Time"
         set ylabel "Temperature [Celsius]"
         set xdata time
-        set ytics 1
+        set ytics 1 nomirror
+        set y2tics 1
         set mytics 2
+        set my2tics 2
         set mxtics 4
         set autoscale x
         set yrange[0:30]
+        set y2range[0:30]
         set format x "%m-%d\n%H:%M:%S"
         set timefmt "%Y-%m-%d %H:%M:%S"
         set style data lines
