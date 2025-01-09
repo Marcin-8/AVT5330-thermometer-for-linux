@@ -59,5 +59,5 @@ How to install:
 
 
 -----------------
-special virtual thanks to karkad for help to kick this off
+special virtual thanks to karkad for a help to kick this off
 https://eko.one.pl/forum/viewtopic.php?id=4203&p=2
