@@ -29,11 +29,11 @@ How to install:
     sudo apt install gnuplot-x11
     terminal2 (run gnuplot for drawing)
         gnuplot
-    copy/paste below to gnuplot editor and hit enter
+    copy/paste below to gnuplot editor and hit enter (assuming temperatures 0-30C in line -> "set yrange[0:30]")
         while (1) {
         reset
-        #set title "Temp"
-        set key title "Sensors"
+        #set title "Temp z ostatnich 24 godzin"
+        set key title "Sensors" 
         set xlabel "Time"
         set ylabel "Temperature [Celsius]"
         set xdata time
@@ -41,7 +41,7 @@ How to install:
         set mytics 2
         set mxtics 4
         set autoscale x
-        set yrange[14:42]
+        set yrange[0:30]
         set format x "%m-%d\n%H:%M:%S"
         set timefmt "%Y-%m-%d %H:%M:%S"
         set style data lines
@@ -50,9 +50,10 @@ How to install:
         set grid ytics ls 100 xtics ls 101 mxtics ls 101
         set key top
         #set samples 1000
-        plot '/tmp/temp_main_output.txt' using 1:8 title 'sensor #6', '/tmp/temp_main_output.txt' using 1:9 title 'sensor #7', '/tmp/temp_main_output.txt' using 1:10 title 'sensor #8'
+        plot '/tmp/temp_main_output.txt' using 1:10 title 'sensor #8', '/tmp/temp_main_output.txt' using 1:9 title 'sensor #7', '/tmp/temp_main_output.txt' using 1:8 title 'sensor #6'
         pause 60
         }
+
 
 
 -----------------
