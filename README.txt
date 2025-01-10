@@ -1,4 +1,4 @@
-This project is a shell script for "AVT5330", tested on Debians: antiX, Ubuntu.
+A shell script for "AVT5330", tested on Debians: antiX, Ubuntu.
 "AVT5330" is a piece of hardware bought for temperature measurements (up to 8 sensors).
 Script measure_temp.sh writes data from sensors to $OUTPUTFILE file, gnuplot can be used to see a trend.
 
